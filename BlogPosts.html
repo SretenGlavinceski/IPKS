@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <style>
+        .wrapper {
+            margin: 1rem 0 0 1rem;
+            display: flex;
+        }
+
+        input:not(.input_radio_wrapper input), textarea {
+            width: 175px;
+        }
+
+        textarea {
+            height: 80px;
+        }
+
+        label:not(.input_radio_wrapper label) {
+            width: 275px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .table_wrapper {
+            margin: 2rem 0 0 1rem;
+        }
+
+        .input_wrapper > label:last-of-type {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .input_wrapper > label:last-of-type > select {
+            margin-left: 2.5rem;
+        }
+
+        select {
+            height: 20px;
+        }
+
+        button {
+            padding: 3px 6px;
+        }
+
+        table, td, tr, th {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+
+        td, tr, th {
+            padding: 3px;
+            text-align: center;
+        }
+
+        .removed_links {
+            margin-left: 4rem;
+        }
+
+        .highlighted-row {
+            background-color: lightblue;
+            transition: background-color 1.5s ease;
+        }
+    </style>
+
+    <script>
+
+        let link = "finki.ukim.mk/"
+        let published = 0;
+
+        data = `[{"title":"FCSE announcement", "post":"FSCE is starting with classes this semestar from 15th Feb.", "type":"Free", "category":"Education", "published":true},
+            {"title":"What is ann NFT", "post":"An NFT, which stands for non-fungible token, is a unique unit of data employing technology that allows digital content to become logged and authenticated on cryptocurrency blockchains", "type":"Free", "category":"Science", "published": false}]`
+
+        data = JSON.parse(data);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            for (let i = 0; i < data.length; i++) {
+                let title = data[i]["title"];
+                let post = data[i]["post"];
+                let type = data[i]["type"];
+                let category = data[i]["category"];
+                let published = data[i]["published"];
+
+                let row = import_post_call(title, post, type, category);
+
+                if (published === true)
+                    row.children[5].children[0].click();
+                else row.children[5].children[1].click()
+            }
+        })
+
+        function import_post_call(title, text, contentType, category) {
+            if (title === "" || text === "") {
+                alert("Enter all fields!");
+                return;
+            }
+
+            let linkPost = createLink(title);
+
+            let row = document.createElement("tr");
+
+            let td1 = document.createElement("td");
+            td1.textContent = title;
+
+            let td2 = document.createElement("td");
+            td2.textContent = text;
+
+            let td3 = document.createElement("td");
+            td3.textContent = linkPost;
+
+            let td4 = document.createElement("td");
+            td4.textContent = contentType;
+
+            let td5 = document.createElement("td");
+            td5.textContent = category;
+
+            let td6 = document.createElement("td");
+            td6.style.display = "flex";
+            td6.style.flexDirection = "column";
+
+            let button_publish = document.createElement("button");
+            button_publish.textContent = "Publish";
+            button_publish.id = "publish_post";
+
+            let button_remove = document.createElement("button");
+            button_remove.textContent = "Remove";
+            button_remove.id = "remove_post";
+
+            td6.append(button_publish);
+            td6.append(button_remove);
+
+            row.append(td1);
+            row.append(td2);
+            row.append(td3);
+            row.append(td4);
+            row.append(td5);
+            row.append(td6);
+
+            document.getElementById("table_posts").append(row);
+
+            return row;
+        }
+
+        function import_post() {
+            let title = document.getElementById("title").value;
+            let text = document.getElementById("post_text").value;
+            let contentType = document.querySelector("input[name='type_post']:checked").value;
+            let category = document.getElementById("category");
+            category = category.options[category.selectedIndex].value;
+
+            import_post_call(title, text, contentType, category);
+        }
+
+        document.addEventListener("click", function (event) {
+            let row = event.target.parentNode.parentNode;
+            if (event.target.id === "publish_post") {
+                let tdParent = event.target.parentNode;
+
+                for (let i = 0; i < tdParent.children.length; i++)
+                    tdParent.children[i].disabled = true;
+
+                // row.classList.add('highlighted-row');
+                d3.select(row).transition().duration(1500).style("background-color", "lightblue");
+
+                published++;
+
+            } else if (event.target.id === "remove_post") {
+                anime({
+                    targets: row,
+                    opacity: 0,
+                    duration: 2000,
+                    easing: "easeInOutSine",
+                    complete: function () {
+                        document.getElementById("table_posts").removeChild(row);
+                        let linkDeleted = document.createElement("li");
+
+                        linkDeleted.textContent = row.children[2].textContent;
+                        linkDeleted.style.opacity = "0";
+                        document.getElementById("removed_links").append(linkDeleted);
+
+                        anime({
+                            targets: linkDeleted,
+                            opacity: 1,
+                            easing: "easeInOutSine",
+                            duration: 1500
+                        })
+                    }
+                })
+            }
+
+            document.getElementById("published_posts").textContent = published.toString();
+        })
+
+        function createLink(title) {
+            let string = link;
+            for (let i = 0; i < title.length; i++) {
+                string += title.charAt(i).toLowerCase();
+            }
+            string = string.replaceAll(" ", "-");
+
+            return string;
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="input_wrapper">
+        <h2>Post details</h2>
+        <br>
+        <label for="title">Title: <input type="text" id="title"></label>
+        <br>
+        <label for="post_text">Post: <textarea id="post_text"></textarea></label>
+        <br>
+        <div class="input_radio_wrapper">Content type:
+            <label for="free"><input type="radio" name="type_post" id="free" value="Free" checked> Free</label>
+            <label for="paid"><input type="radio" name="type_post" id="paid" value="Paid"> Paid</label>
+        </div>
+        <br>
+        <label for="category">Category
+            <select id="category">
+                <option value="Science">Science</option>
+                <option value="Education">Education</option>
+                <option value="History">History</option>
+            </select>
+        </label>
+        <br>
+        <br>
+        <button onclick="import_post()">Import Post</button>
+    </div>
+    <div class="removed_links">
+        <h3>Removed Links</h3>
+        <ul id="removed_links"></ul>
+    </div>
+</div>
+
+<div class="table_wrapper">
+    <h2>Published Posts <span id="published_posts">0</span></h2>
+    <table id="table_posts">
+        <tr>
+            <th>Title</th>
+            <th>Post</th>
+            <th>Link</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Action</th>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

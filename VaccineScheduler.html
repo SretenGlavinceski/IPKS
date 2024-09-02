@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .wrapper_input {
+            display: flex;
+            column-gap: 6rem;
+        }
+
+        label:not(.radio_gender > *) {
+            width: 275px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input:not(.radio_gender input) {
+            width: 150px;
+            height: 16px;
+        }
+
+        .button_wrapper {
+            width: 650px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 4px 8px;
+        }
+
+        .table_wrapper {
+            display: flex;
+            column-gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        table, tr, td, th {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+
+        tr, td, th {
+            text-align: center;
+            padding: 3px 6px;
+        }
+
+        .table_wrapper h2 {
+            width: 300px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .table_mature_wrapper, .table_underage_wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        li {
+            padding: 0;
+            margin: 0;
+        }
+
+    </style>
+
+    <script>
+
+        data = `[{"ime":"Angela", "prezime":"Angelova", "id":"1092846282092", "pol":"1", "godini":"25", "email":"anchian@yahoo.com", "lokacija":"Bitola"},
+             {"ime":"Dimitar", "prezime":"Dimitrov", "id":"0693826282613", "pol":"2", "godini":"71", "email":"dimirat.dimitrov@gmail.com", "lokacija":"Skopje"}]`;
+
+        data = JSON.parse(data);
+
+        let personByID = new Map();
+
+        document.addEventListener("DOMContentLoaded", function () {
+            for (let i = 0; i < data.length; i++) {
+                let name = data[i]["ime"];
+                let surname = data[i]["prezime"];
+                let id = data[i]["id"];
+                let pol = data[i]["pol"];
+                let godini = parseInt(data[i]["godini"]);
+                let email = data[i]["email"];
+                let lokacija = data[i]["lokacija"];
+
+                if (pol === "1")
+                    pol = "female";
+                else
+                    pol = "male";
+
+                if (lokacija === "Skopje")
+                    lokacija === "Скопје";
+                else if (lokacija === "Kumanovo")
+                    lokacija === "Куманово";
+                else if (lokacija === "Bitola")
+                    lokacija === "Битола";
+                else
+                    lokacija === "Тетово";
+
+              add_patient_helper(name, surname, godini, id, email, lokacija, pol);
+
+            }
+        })
+
+        document.addEventListener("click", function (event) {
+            if (event.target.id === "vaccine_button") {
+                let row = event.target.parentNode.parentNode;
+                let parent = row.parentNode;
+                anime({
+                    targets: row,
+                    opacity: 0,
+                    easing: 'easeInOutSine',
+                    duration: 1500,
+                    complete: function () {
+                        parent.removeChild(row);
+
+                        let nameSurname = row.children[0].textContent + " " + row.children[1].textContent;
+                        let li = document.createElement("li");
+                        li.textContent = nameSurname;
+
+                        document.getElementById("vaccinated_people").append(li);
+
+                        if (parent.id === "table_mature" && parent.children.length === 1) {
+                            disableOrEnableUnderAgePeopleButton("false");
+                        }
+                    }
+                })
+            }
+        })
+
+
+        function add_patient_helper(name, surname, age, id_number, email, location, gender) {
+            if (name === "" || surname === "" || age == "" || id_number === "" || email === "" || location === "" || gender === "") {
+                alert("Enter all fields!");
+                return;
+            }
+
+            if (personByID.get(id_number) != null) {
+                let element = personByID.get(id_number);
+                element.children[3].textContent = location;
+                return;
+            }
+
+            if (!checkValidID(id_number)) {
+                alert("Invalid ID number!");
+                return;
+            }
+
+            if (!checkEmailAddress(email)) {
+                alert("Invalid email address!");
+                return;
+            }
+
+            let element = createRowElement(name, surname, email, location);
+
+            if (gender === "male")
+                element.style.backgroundColor = "lightblue";
+            else
+                element.style.backgroundColor = "lightcoral";
+
+            let tableMature = document.getElementById("table_mature");
+            let tableUnderAge = document.getElementById("table_underage");
+
+            if (age < 18) {
+                tableUnderAge.append(element);
+                if (tableMature.children.length !== 1) {
+                    element.children[4].children[0].disabled = true;
+                }
+            } else {
+                tableMature.append(element);
+                disableOrEnableUnderAgePeopleButton("true");
+            }
+
+            personByID.set(id_number, element);
+        }
+
+        function add_patient() {
+            let name = document.getElementById("name").value;
+            let surname = document.getElementById("surname").value;
+            let age = parseInt(document.getElementById("age").value);
+            let id_number = document.getElementById("id_number").value;
+            let email = document.getElementById("email").value;
+            let location = document.getElementById("location");
+            location = location.options[location.selectedIndex].value;
+            let gender = (document.querySelector('input[name="gender"]:checked').value);
+
+            add_patient_helper(name, surname, age, id_number, email, location, gender);
+        }
+
+        function createRowElement(name, surname, email, location) {
+            let row = document.createElement("tr");
+
+            let td1 = document.createElement("td");
+            td1.textContent = name;
+
+            let td2 = document.createElement("td");
+            td2.textContent = surname;
+
+            let td3 = document.createElement("td");
+            td3.textContent = email;
+
+            let td4 = document.createElement("td");
+            td4.textContent = location;
+
+            let button_vaccine = document.createElement("button");
+            button_vaccine.textContent = "Вакциниран";
+            button_vaccine.id = "vaccine_button";
+
+            let td5 = document.createElement("td");
+            td5.append(button_vaccine);
+
+            row.append(td1);
+            row.append(td2);
+            row.append(td3);
+            row.append(td4);
+            row.append(td5);
+
+            return row;
+        }
+
+        function disableOrEnableUnderAgePeopleButton(type) {
+            let tableUnderAge = document.getElementById("table_underage");
+            for (let i = 1; i < tableUnderAge.children.length; i++) {
+                if (type === "true")
+                    tableUnderAge.children[i].children[4].children[0].disabled = true;
+                else
+                    tableUnderAge.children[i].children[4].children[0].disabled = false;
+            }
+        }
+
+        function checkValidID(id) {
+            return id.length === 13;
+        }
+
+        function checkEmailAddress(email) {
+            return !!((email.includes("@yahoo.com") || email.includes("@gmail.com")) && email.length > 10);
+
+        }
+    </script>
+</head>
+<body>
+
+<h1>Вакцина.мк</h1>
+<h2>Сајт за истражување интерес за вакцина</h2>
+<br>
+<br>
+<div class="wrapper_input">
+    <div class="left">
+        <label for="name">Име: <input type="text" id="name"></label>
+        <br>
+        <label for="id_number">Матичен број: <input type="text" id="id_number"></label>
+        <br>
+        <label for="age">Години: <input type="text" id="age"></label>
+        <br>
+        <label for="location">Локација:
+            <select id="location">
+                <option value="Скопје">Скопје</option>
+                <option value="Куманово">Куманово</option>
+                <option value="Битола">Битола</option>
+                <option value="Тетово">Тетово</option>
+            </select></label>
+        <br>
+    </div>
+
+    <div class="right">
+        <label for="surname">Презиме: <input type="text" id="surname"></label>
+        <br>
+        <div class="radio_gender">
+            <span style="display: inline-block; margin-right: 4rem">Пол</span>
+            <label for="female"><input type="radio" name="gender" value="female" id="female"> Женски</label>
+            <label for="male"><input type="radio" name="gender" value="male" id="male"> Машки</label>
+        </div>
+        <br>
+        <label for="email">Email адреса: <input type="text" id="email"></label>
+        <br>
+    </div>
+</div>
+
+<div class="button_wrapper">
+    <button onclick="add_patient()">Внеси</button>
+</div>
+
+<div class="table_wrapper">
+    <div class="table_underage_wrapper">
+        <h2>Пријавени малолетни граѓани</h2>
+        <table id="table_underage">
+            <tr>
+                <th>Име</th>
+                <th>Презиме</th>
+                <th>Адреса</th>
+                <th>Локација</th>
+                <th>Статус</th>
+            </tr>
+        </table>
+    </div>
+
+    <div class="table_mature_wrapper">
+        <h2>Пријавени полнолетни граѓани</h2>
+        <table id="table_mature">
+            <tr>
+                <th>Име</th>
+                <th>Презиме</th>
+                <th>Адреса</th>
+                <th>Локација</th>
+                <th>Статус</th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="vaccined_people">
+    <h4>Вакцинирани</h4>
+    <ul id="vaccinated_people"></ul>
+</div>
+
+</body>
+</html>

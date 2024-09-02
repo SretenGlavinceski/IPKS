@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+
+    <style>
+        .input-box {
+            margin: 1rem 0 0 1rem;
+        }
+        #boxes {
+            display: flex;
+        }
+        .box {
+            width: 100px;
+            height: 100px;
+            margin-right: 0.5rem;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            document.addEventListener("click", function (event) {
+                if (event.target.classList.contains("draw-button")) {
+                    let colorString = document.getElementById("colors").value;
+                    let delimiter = document.getElementById("delimiter").value;
+
+                    if (colorString === "" || delimiter === "") {
+                        alert("Please enter fields!");
+                        return;
+                    }
+
+                    let colors = colorString.split(delimiter);
+                    let box_container = document.getElementById("boxes");
+
+                    Array.from(colors).forEach(color => {
+                        let element = document.createElement("div");
+                        element.style.backgroundColor = color.toString();
+                        element.classList.add("box");
+                        element.classList.add(color.toString());
+                        box_container.append(element);
+
+                        element.addEventListener("click", function() {
+                            d3.select(this).remove();
+
+                            document.getElementById("colors").value =
+                                Array.from(document.getElementsByClassName("box"))
+                                .map(box => box.classList[1])
+                                .join(delimiter);
+                        })
+                    })
+                }
+            })
+
+        })
+    </script>
+
+</head>
+<body>
+
+<div class="input-box">
+    <label for="colors">Colors:
+        <br>
+        <br>
+        <input type="text" id="colors">
+    </label>
+    <br>
+    <br>
+    <label for="delimiter">Delimiter:
+        <br>
+        <br>
+        <input type="text" id="delimiter">
+    </label>
+    <br>
+    <br>
+    <button class="draw-button">Draw</button>
+</div>
+
+<br>
+
+<div id="boxes"></div>
+
+</body>
+</html>

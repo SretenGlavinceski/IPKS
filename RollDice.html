@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        .box {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #000;
+            font-size: 90px;
+            font-weight: bold;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrapper-box {
+            display: flex;
+        }
+
+        #firstNumber {
+            margin-right: 0.5rem;
+        }
+        button {
+          padding: 2px 4px;
+        }
+    </style>
+
+    <script>
+
+        function NumberGuess(input, dices) {
+            this.input = input;
+            this.dices = dices;
+        }
+
+        let guesses = [];
+
+        document.addEventListener("click", function (event) {
+            if (event.target.id === "roll_button") {
+                let numberGuess = document.getElementById("number_guess");
+
+                if (numberGuess.value === "") {
+                    alert("Enter numberGuess");
+                    return;
+                }
+
+                let firstNumField = document.getElementById("firstNumber");
+                let secondNumField = document.getElementById("secondNumber");
+
+                let interval = setInterval(function () {
+                    firstNumField.textContent = generateNumber().toString();
+                    secondNumField.textContent = generateNumber().toString();
+                }, 40)
+
+                setTimeout(() => {
+                    clearTimeout(interval);
+
+                    let generated = firstNumField.textContent + secondNumField.textContent;
+
+                    if (generated === numberGuess.value.toString())
+                        numberGuess.style.backgroundColor = "lightgreen";
+                    else
+                        numberGuess.style.backgroundColor = "red";
+
+                    let dices = [];
+                    dices.push(parseInt(firstNumField.textContent))
+                    dices.push(parseInt(secondNumField.textContent))
+
+                    let addNumberAndGuess = new NumberGuess(parseInt(numberGuess.value), dices);
+                    guesses.push(addNumberAndGuess);
+
+                }, 2000);
+            } else if (event.target.id === "display_json") {
+                let string_json = JSON.stringify(guesses);
+                alert(string_json);
+            }
+        })
+
+        function generateNumber() {
+            return Math.floor(Math.random() * 6 + 1);
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <label for="number_guess"><input type="number" id="number_guess"></label>
+    <button id="roll_button">Roll</button>
+    <br>
+    <br>
+    <div class="wrapper-box">
+        <div id="firstNumber" class="box"></div>
+        <div id="secondNumber" class="box"></div>
+    </div>
+    <br>
+    <br>
+    <button id="display_json">History to json</button>
+</div>
+
+</body>
+</html>

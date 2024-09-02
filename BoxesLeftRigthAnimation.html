@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 5px 10px;
+        }
+
+        .wrapper {
+            margin: 1rem 0 0 1rem;
+        }
+    </style>
+
+    <script>
+        data = '[{"background-color":"red", "width":"100px", "height":"100px"}, ' +
+            '{"background-color":"green", "width":"50px", "height":"100px"},' +
+            ' {"background-color":"blue", "width":"100px", "height":"50px"}]';
+
+        let jsonData = JSON.parse(data)
+
+        let boxes = [];
+        let current = 0;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            generateBoxes();
+
+            document.getElementById("shift_right").addEventListener("click", function() {
+                let currElement = document.querySelector("#adding-boxes div:first-of-type")
+
+                d3.select(currElement).transition().duration(1800).style("left", "100%");
+                d3.select(currElement).transition().delay(1800).remove()
+
+                current++;
+
+                if (current === 3) {
+                    current = 0;
+                }
+
+                let newElement = boxes[current]
+
+                newElement.style.left = "-20%"
+                document.getElementById("adding-boxes").append(newElement)
+
+                d3.select(newElement).transition().delay(1800).duration(1200).style("left", "0%");
+
+            })
+
+            document.getElementById("shift_left").addEventListener("click", function() {
+                let currElement = document.querySelector("#adding-boxes div:first-of-type");
+
+                d3.select(currElement).transition().duration(1500).style("left", "-20%");
+                d3.select(currElement).transition().delay(1500).remove();
+
+                current--;
+
+                if (current === -1) {
+                    current = 2;
+                }
+
+                let newElement = boxes[current];
+
+                newElement.style.left = "100%";
+                document.getElementById("adding-boxes").append(newElement);
+                d3.select(newElement).transition().delay(1500).duration(1500).style("left", "0%");
+
+            })
+
+        })
+
+        function generateBoxes() {
+            jsonData.forEach(dataBox => {
+                let element = document.createElement("div");
+
+                element.style.backgroundColor = dataBox["background-color"];
+                element.style.width = dataBox["width"];
+                element.style.height = dataBox["height"];
+                element.style.position = "absolute";
+
+                boxes.push(element)
+            })
+
+            document.getElementById("adding-boxes").append(boxes[0])
+        }
+
+    </script>
+</head>
+<body>
+
+<div class="wrapper">
+    <button id="shift_left"><</button>
+    <button id="shift_right">></button>
+    <br>
+
+</div>
+<br>
+<div id="adding-boxes"></div>
+
+</body>
+</html>

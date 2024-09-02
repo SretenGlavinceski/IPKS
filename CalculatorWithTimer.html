@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+  <style>
+    .wrapper {
+      margin: 1rem 0 0 1rem;
+    }
+    .input_field {
+      margin-bottom: 0.5rem;
+    }
+    #numbers_generated {
+      margin-bottom: 0.5rem;
+    }
+    #numbers_generated > * {
+      margin-right: 0.5rem;
+    }
+  </style>
+
+  <script>
+
+    let currentNumbers = [];
+    let time = 59;
+
+    document.addEventListener("DOMContentLoaded", function () {
+      generateNumbers();
+
+      let interval = setInterval(function() {
+        if (time === 0) {
+          clearInterval(interval);
+          disableFields();
+        }
+        document.getElementById("timer").textContent = time.toString();
+        time--;
+      }, 1000)
+
+      document.addEventListener("click", function (event) {
+        if (event.target.id === "check_equation") {
+          let equation = document.getElementById("equation").value;
+
+          if (equation === "") {
+            alert("Enter equation!");
+            return;
+          }
+
+          if (!checkEquationInput(equation)) {
+            return;
+          }
+
+          equation = eval(equation);
+          console.log(equation)
+          if (equation === currentNumbers[currentNumbers.length - 1]) {
+            alert("CORRECT!");
+            disableFields();
+            clearInterval(interval);
+          }
+        }
+      })
+    })
+
+    // in this check we want to use all numbers at least once, and no other than those can be used.
+    function checkEquationInput(equation) {
+      let numbersUsed = equation
+              .replaceAll("+", " ")
+              .replaceAll("-", " ")
+              .replaceAll("*", " ")
+              .replaceAll("(", " ")
+              .replaceAll(")", " ");
+
+      numbersUsed = numbersUsed.split(/\s+/);
+
+      let set = new Set();
+      numbersUsed.filter(i => i !== "")
+              .forEach(i => set.add(i));
+
+      for (let i = 0; i < 5; i++) {
+        if (!equation.includes(currentNumbers[i].toString())) {
+          alert("Use all Numbers provided!");
+          return false;
+        } else {
+          set.delete(currentNumbers[i].toString());
+        }
+      }
+
+      if (set.size > 0) {
+        alert("You can use only the numbers provided!");
+        return false;
+      }
+
+      return true;
+    }
+
+    function generateNumbers() {
+      for (let i = 0; i < 6; i++) {
+        let numSpan = document.createElement("span");
+        let number;
+        if (i < 2)
+          number = generateSingleDigitNumber();
+         else if (i < 4)
+          number = generateDoubleDigitNumber();
+         else
+          number = generateThreeDigitNumber();
+
+        currentNumbers.push(number);
+        if (i === 5)
+          numSpan.textContent = "= " + number.toString();
+        else
+          numSpan.textContent = number.toString();
+
+        document.getElementById("numbers_generated").append(numSpan);
+      }
+    }
+
+    function disableFields() {
+      document.getElementById("check_equation").disabled = true;
+      document.getElementById("equation").disabled = true;
+    }
+
+    function generateSingleDigitNumber() {
+      return Math.floor(Math.random() * 10);
+    }
+
+    function generateDoubleDigitNumber() {
+      return Math.floor(Math.random() * 90) + 10;
+    }
+
+    function generateThreeDigitNumber() {
+      return Math.floor(Math.random() * 900) + 100;
+    }
+  </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+  <div id="numbers_generated"></div>
+  <div class="input_field">
+    <input type="text" id="equation">
+    <button id="check_equation">Провери</button>
+  </div>
+  <p>Преостанато време <span id="timer">60</span> секунди.</p>
+
+</div>
+
+</body>
+</html>

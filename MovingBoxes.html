@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+
+    <script>
+        data = `[{"size":50,"color":"red"},
+            {"size":40,"color":"green"},
+            {"size":20,"color":"blue"},
+            {"size":35,"color":"yellow"},
+            {"size":25,"color":"orange"}]`;
+
+        data = JSON.parse(data);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            createInitialBoxes();
+        })
+
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("box"))
+                duplicateAnimate(event.target);
+        })
+
+        function createInitialBoxes() {
+            for (let i = 0; i < 5; i++)
+                document.getElementsByTagName("body")[0].append(createElementFromData(i));
+        }
+
+        function duplicateAnimate(original) {
+            d3.select(original).remove(); // remove starting element
+
+            for (let i = 0; i < 4; i++) { // create new 4 and animate them
+                let element = createElementFromData(original.classList[1]);
+
+                element.style.left = original.style.left;
+                element.style.top = original.style.top;
+                document.getElementsByTagName("body")[0].append(element);
+
+                let startTop = parseInt(original.style.top.replace("px", ""));
+                let startLeft = parseInt(original.style.left.replace("px", ""));
+                let size = parseInt(original.style.width);
+
+                let signTop;
+                let signLeft;
+
+                if (i === 0) {
+                    signTop = "-";
+                    signLeft = "-";
+                }
+                else if (i === 1) {
+                    signTop = "+";
+                    signLeft = "-";
+                }
+
+                else if (i === 2) {
+                    signTop = "-";
+                    signLeft = "+";
+                }
+
+                else if (i === 3){
+                    signTop = "+";
+                    signLeft = "+";
+                }
+
+                d3.select(element)
+                    .transition().duration(1200).ease("easeLinear")
+                    .style("left", calculate(startLeft, size, signLeft) + "px")
+                    .style("top", calculate(startTop, size, signTop) + "px");
+
+            }
+        }
+
+        function calculate(num1, num2, sign) {
+            if (sign==="+")
+                return num1+num2;
+            else if (sign === "-")
+                return  num1 - num2;
+        }
+
+        function createElementFromData(index) {
+            let element = document.createElement("div");
+            element.style.width = data[index].size + "px";
+            element.style.height = data[index].size + "px";
+            element.style.backgroundColor = data[index].color;
+
+            element.style.position = "absolute";
+            element.style.left = randomLeft() + "px";
+            element.style.top = randomTop() + "px";
+
+            element.classList.add("box");
+            element.classList.add(index.toString())
+
+            return element;
+        }
+
+        function randomLeft() {
+            return Math.floor(Math.random() * 1000 + 1);
+        }
+
+        function randomTop() {
+            return Math.floor(Math.random() * 500 + 1);
+        }
+
+    </script>
+
+</head>
+<body>
+</body>
+</html>

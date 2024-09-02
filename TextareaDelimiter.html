@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        .main-wrapper, .table-wrapper {
+            margin: 1rem 0 0 1rem;
+        }
+        table, tr, td, th {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+        tr, td, th {
+            padding: 3px 6px;
+            text-align: center;
+        }
+        label {
+            width: 275px;
+            display: flex;
+            justify-content: space-between;
+        }
+        input, textarea {
+            width: 190px;
+        }
+        textarea {
+            height: 90px;
+        }
+
+    </style>
+
+    <script>
+
+        let rowByID = new Map();
+        function create_table() {
+            let text = document.getElementById("text").value;
+            let delimiter = document.getElementById("delimiter").value;
+
+            let rows = text.split("\n");
+            let table = document.getElementById("table-text");
+            table.append(createRow(rows[0], delimiter, "th"));
+
+            for (let i = 1; i < rows.length; i++) {
+                table.append(createRow(rows[i], delimiter, "td"));
+            }
+        }
+
+        function createRow(input, delimiter, type) {
+            let parts = input.split(delimiter);
+
+            let row = document.createElement("tr");
+
+            let td1 = document.createElement(type);
+            td1.textContent = parts[0];
+
+            let td2 = document.createElement(type);
+            td2.textContent = parts[1];
+
+            let td3 = document.createElement(type);
+            td3.textContent = parts[2];
+
+            if (type === "td") {
+                td1.classList.add("box")
+                td2.classList.add("box")
+                td3.classList.add("box")
+            }
+
+            row.append(td1);
+            row.append(td2);
+            row.append(td3);
+
+
+            rowByID.set(parts[2], input);
+
+            return row;
+        }
+
+        document.addEventListener("click", function (event) {
+            if (event.target.classList.contains("box")) {
+                let parent = event.target.parentNode.parentNode;
+                let row = event.target.parentNode;
+
+                anime({
+                    targets: row,
+                    opacity: 0,
+                    duration: 1500,
+                    easing: 'easeInOutSine',
+                    complete: function () {
+                        parent.removeChild(row);
+                        let id = row.children[2].textContent;
+                        rowByID.delete(id);
+
+                        let string = "";
+                        rowByID.forEach((k, v) => {
+                            string += k;
+                            string += "\n";
+                        })
+
+                        document.getElementById("text").value = string;
+
+                    }
+                })
+            }
+        })
+
+    </script>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <label for="text">Text: <textarea id="text"></textarea></label>
+    <br>
+    <label for="delimiter">Delimiter: <input type="text" id="delimiter"></label>
+    <br>
+    <button onclick="create_table()">Create</button>
+</div>
+<br>
+<div class="table-wrapper">
+    <table id="table-text">
+
+    </table>
+</div>
+
+</body>
+</html>

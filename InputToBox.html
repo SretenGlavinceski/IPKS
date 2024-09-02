@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+
+
+<script>
+    document.addEventListener("click", function(event) {
+        if (event.target.id === "add_box") {
+            let input = document.getElementById("text").value;
+            if (input === "") {
+                alert("Enter box properties!");
+                return;
+            }
+
+            let properties = input.split(",");
+
+            if (properties.length !== 4) {
+                alert("Input should be of type: color,width,height,text!");
+                return;
+            }
+
+            let element = document.createElement("div");
+            element.style.backgroundColor = properties[0];
+            element.style.width = properties[1] + "px";
+            element.style.height = properties[2] + "px";
+            element.textContent = editText(properties[3]);
+            element.style.textAlign = "center";
+            element.style.fontSize = "20px";
+
+            document.getElementById("boxes_wrapper").append(element);
+        }
+    })
+
+    function editText(text) {
+        let string = "";
+        for (let i = 0; i < text.length; i++) {
+            if (i % 2 === 0)
+                string += text.charAt(i).toLowerCase();
+            else
+                string += text.charAt(i).toUpperCase();
+        }
+
+        return string;
+    }
+</script>
+
+<body>
+
+<div>
+    <input type="text" id="text">
+    <button id="add_box">Постави</button>
+</div>
+
+<br>
+
+<div id="boxes_wrapper"></div>
+
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <style>
+        .upper-wrap {
+            margin: 1rem 0 0 1rem;
+        }
+        label {
+            margin-right: 1rem;
+            width: 200px;
+        }
+        table, tr, td, th {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+        tr, td, th {
+            padding: 3px 6px;
+            text-align: center;
+        }
+
+    </style>
+
+    <script>
+
+        data = `[{"hoteli":[{"ime":"Monastero","od":"31.8.2021","do":"11.9.2021","sobi":3},
+                {"ime":"Hotel 71","od":"1.9.2021","do":"3.9.2021","sobi":1},
+                {"ime":"RAAS Jodhpur","od":"28.8.2021","do":"10.10.2021","sobi":10},
+                {"ime":"Archer Hotel ","od":"1.8.2021","do":"1.10.2021","sobi":0},
+                {"ime":"The Langham Huntington","od":"3.8.2021","do":"3.9.2021","sobi":5}]}]`
+
+        data = JSON.parse(data);
+        let hotels = [];
+        let hotelByName = new Map();
+
+        function Hotel(name, startDate, endDate, rooms) {
+            this.name = name;
+            this.startDate = startDate;
+            this.endDate = endDate;
+            this.rooms = parseInt(rooms);
+            this.htmlRow = null;
+
+            this.setRooms = function(value) {
+                this.rooms -= value;
+            }
+
+            this.reserveRooms = function (startTime, endTime, roomNum) {
+                return (this.startDate <= startTime && this.endDate >= endTime && this.rooms >= roomNum);
+            }
+
+            this.createElementHTML = function () {
+                let row = document.createElement("tr");
+
+                let td1 = document.createElement("td");
+                td1.textContent = this.name;
+
+                let td2 = document.createElement("td");
+                td2.textContent = this.startDate.toISOString().substring(0, 10).replaceAll("-", ".");
+
+                let td3 = document.createElement("td");
+                td3.textContent = this.endDate.toISOString().substring(0, 10).replaceAll("-", ".");;
+
+                let td4 = document.createElement("td");
+                td4.textContent = this.rooms;
+
+                let td5 = document.createElement("td");
+
+                let button_reserve = document.createElement("button");
+                button_reserve.textContent = "Rezerviraj";
+                button_reserve.classList.add("reserve_button");
+
+                td5.append(button_reserve);
+
+                row.append(td1);
+                row.append(td2);
+                row.append(td3);
+                row.append(td4);
+                row.append(td5);
+
+                this.htmlRow = row;
+            }
+
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            createHotels();
+            setInitialDates();
+        })
+
+        function setInitialDates() {
+            let today = new Date();
+            console.log(today.toISOString());
+            document.getElementById("dateFrom").value = today.toISOString().substring(0, 10);
+            document.getElementById("dateTo").value = today.toISOString().substring(0, 10);
+            document.getElementById("rooms").value = "1";
+            // document.getElementById("dateFrom").value = "2021-09-01"
+            // document.getElementById("dateTo").value = "2021-08-03"
+        }
+
+        function createHotels() {
+            let hotelsData = data[0]["hoteli"];
+
+            for (let i = 0; i < 5; i++) {
+                let name = hotelsData[i]["ime"];
+                let startDate = new Date(createDateFromJSON(hotelsData[i]["od"]));
+                let endDate = new Date(createDateFromJSON(hotelsData[i]["do"]));
+                let rooms = hotelsData[i]["sobi"];
+
+                let hotel = new Hotel(name, startDate, endDate, rooms);
+                hotels.push(hotel);
+                hotelByName.set(name, hotel);
+            }
+        }
+
+        function createDateFromJSON(string) {
+            let parts = string.split(".");
+            let days = parts[0];
+            let month = parts[1];
+            let year = parts[2];
+
+            return year + "-" + month + "-" + days;
+        }
+
+        function reserve(){
+            let start = new Date(document.getElementById("dateFrom").value);
+            console.log(document.getElementById("dateFrom").value);
+            let end = new Date(document.getElementById("dateTo").value);
+            let rooms = parseInt(document.getElementById("rooms").value);
+
+            document.getElementById("table-wrapper").innerHTML = "";
+
+            createTable(start, end, rooms);
+        }
+
+        function createTable(start, end, rooms) {
+            let table = document.createElement("table");
+
+            let row1 = document.createElement("tr");
+
+            let td1 = document.createElement("th");
+            td1.textContent = "Ime";
+
+            let td2 = document.createElement("th");
+            td2.textContent = "Od";
+
+            let td3 = document.createElement("th");
+            td3.textContent = "Do";
+
+            let td4 = document.createElement("th");
+            td4.textContent = "Sobi";
+
+            let td5 = document.createElement("th");
+            td5.textContent = "";
+
+            row1.append(td1);
+            row1.append(td2);
+            row1.append(td3);
+            row1.append(td4);
+            row1.append(td5);
+
+            table.append(row1);
+
+            hotels.filter(hotel => hotel.reserveRooms(start, end, rooms)).forEach(hotel => {
+                hotel.createElementHTML()
+                table.append(hotel.htmlRow);
+            })
+
+            document.getElementById("table-wrapper").append(table);
+
+        }
+
+        document.addEventListener("click", function (event) {
+            if (event.target.classList.contains("reserve_button")) {
+                console.log("here")
+                let row = event.target.parentNode.parentNode;
+                d3.select(row).transition().duration(1500).style("background-color", "lightgreen");
+
+                let hotelName = row.children[0].textContent;
+                let currHotel = hotelByName.get(hotelName);
+
+                currHotel.setRooms(parseInt(document.getElementById("rooms").value));
+                currHotel.htmlRow.children[3].textContent = currHotel.rooms;
+
+                hotels.filter(i => i.htmlRow != null).forEach(i => {
+                    i.htmlRow.children[4].children[0].disabled = true;
+                })
+            }
+        })
+
+    </script>
+
+</head>
+
+<body>
+
+<div class="upper-wrap">
+    <label for="dateFrom">Od <input type="date" id="dateFrom"></label>
+    <label for="dateTo">Do <input type="date" id="dateTo"></label>
+    <label for="rooms">Sobi <input type="text" id="rooms" value="1"></label>
+    <button onclick="reserve()">Резервирај</button>
+</div>
+<br>
+
+<div id="table-wrapper">
+
+</div>
+
+</body>
+</html>

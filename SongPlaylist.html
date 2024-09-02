@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        body {
+            background-color: mediumpurple;
+        }
+        #number_songs {
+            width: 50px;
+        }
+        table, tr, th, td {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+
+        tr, th, td {
+            padding: 3px 5px;
+            text-align: center;
+        }
+        button {
+            border-radius: 10px;
+        }
+        input {
+            border: 3px solid #000;
+        }
+
+    </style>
+
+    <script>
+        data = `[{"artist":"Marc", "title":"TheWorks", "genre":"Pop", "releaseYear":"2022"},
+        {"artist":"James", "title":"Jinx", "genre":"Rock", "releaseYear":"2021"}
+        ,{"artist":"Jayne", "title":"Roll", "genre":"Blues", "releaseYear":"2023"},
+        {"artist":"Alfie", "title":"MegaGiga", "genre":"Pop", "releaseYear":"2019"},
+        {"artist":"Rick", "title":"Extract", "genre":"Rock", "releaseYear":"2028"},
+        {"artist":"William", "title":"Extract", "genre":"Blues", "releaseYear":"2026"}]`;
+
+        data = JSON.parse(data);
+
+        let songs = [];
+        function Song(artist, title, genre, releaseYear) {
+            this.artist = artist;
+            this.title = title;
+            this.genre = genre;
+            this.releaseYear = releaseYear;
+            this.id = function () {
+                let string = this.artist.charAt(0);
+                for (let i = 0; i < this.title.length; i++) {
+                    if (this.title.charAt(i) === this.title.charAt(i).toUpperCase())
+                        string += this.title.charAt(i);
+                }
+                return string;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            generateSongsObjects();
+            document.addEventListener("click", function (event) {
+                if (event.target.id === "mix_button") {
+                    let numOfSongs = document.getElementById("number_songs").value;
+                    let typeSongs = document.getElementById("select_type_music");
+                    typeSongs = typeSongs.options[typeSongs.selectedIndex].value;
+
+                    if (numOfSongs === "" || typeSongs === "") {
+                        alert("Enter fields!");
+                        return;
+                    }
+
+                    let playlist = document.getElementById("playlist");
+                    for (let i = playlist.children.length - 1; i > 0; i--) {
+                        playlist.removeChild(playlist.children[i]);
+                    }
+
+                    let endIndex;
+                    if (numOfSongs > 6)
+                        endIndex = 6;
+                    else
+                        endIndex = numOfSongs;
+
+                    if (typeSongs === "All"){
+                        for (let i = 0; i < endIndex; i++)
+                            playlist.append(makeSongElement(songs[i]));
+                    } else {
+                        let j = 0;
+                        for (let i = 0; i < 6; i++) {
+                            let newSong = makeSongElement(songs[i]);
+                            if (newSong.children[3].textContent === typeSongs) {
+
+                                if (j === parseInt(endIndex))
+                                    break;
+
+                                playlist.append(newSong);
+                                j++;
+                            }
+                        }
+
+                    }
+                }
+            })
+            document.addEventListener("click", function (event) {
+
+                let table = document.getElementById("playlist");
+                let row = event.target.parentNode.parentNode;
+                let index;
+
+                for (let i = 1; i < table.children.length; i++) {
+                    if (table.children[i] === row)
+                        index = i;
+                }
+
+                if (event.target.classList.contains("up_button")) {
+                    if (table.children[1] === row) {
+                        // console.log("First child can't go up!")
+                        return;
+                    }
+                    let elementFirstSwap = table.children[index];
+                    let elementSecondSwap = table.children[index - 1];
+
+                    table.insertBefore(elementFirstSwap, table.rows[index - 1]);
+                    table.insertBefore(elementSecondSwap, table.rows[index]);
+
+                }
+
+                if (event.target.classList.contains("down_button")) {
+                    if (table.children[table.children.length - 1] === row) {
+                        // console.log("Last child can't go down!")
+                        return;
+                    }
+
+                    let elementFirstSwap = table.children[index];
+                    let elementSecondSwap = table.children[index + 1];
+
+                    table.insertBefore(elementFirstSwap, table.rows[index + 1]);
+                    table.insertBefore(elementSecondSwap, table.rows[index]);
+
+                }
+            })
+        })
+
+        function generateSongsObjects() {
+            for (let i = 0; i < data.length; i++) {
+                let song = new Song(data[i]["artist"], data[i]["title"], data[i]["genre"], data[i]["releaseYear"]);
+                songs.push(song);
+            }
+        }
+
+        function makeSongElement(song) {
+            let row = document.createElement("tr");
+
+            let td1 = document.createElement("td");
+            td1.textContent = song.id();
+
+            let td2 = document.createElement("td");
+            td2.textContent = song.artist;
+
+            let td3 = document.createElement("td");
+            td3.textContent = song.title;
+
+            let td4 = document.createElement("td");
+            td4.textContent = song.genre;
+
+            let td5 = document.createElement("td");
+            td5.textContent = song.releaseYear;
+
+            let button_up = document.createElement("button");
+            button_up.textContent = "UP";
+            button_up.style.color = "red";
+            button_up.classList.add("up_button");
+
+            let button_down = document.createElement("button");
+            button_down.textContent = "DOWN";
+            button_down.style.color = "blue";
+            button_down.classList.add("down_button");
+
+            let td6 = document.createElement("td");
+            td6.append(button_up);
+            td6.append(button_down);
+
+            row.append(td1);
+            row.append(td2);
+            row.append(td3);
+            row.append(td4);
+            row.append(td5);
+            row.append(td6);
+
+            return row;
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div>
+    <p>Get <input type="number" id="number_songs"> songs! <button id="mix_button">Mix</button>
+        <select id="select_type_music">
+        <option value="All">All</option>
+        <option value="Pop">Pop</option>
+        <option value="Rock">Rock</option>
+        <option value="Blues">Blues</option>
+    </select></p>
+</div>
+<br>
+<div>
+    <table id="playlist">
+        <tr>
+            <th>ID</th>
+            <th>Artist</th>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Release year</th>
+            <th>move</th>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        table, tr, td {
+            border: 1px solid #000;
+        }
+
+        td {
+            width: 25px;
+            height: 25px;
+            text-align: center;
+        }
+
+        #tables, p {
+            margin: 1rem 0 0 1rem;
+        }
+
+        #tables > * {
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    <script>
+        data = `[{"id":1,"numbers":[80,72,49,1,34,81,36,2,13,9,54,93,29,18,52]},
+            {"id":2,"numbers":[68,85,24,7,32,12,88,57,35,11,44,58,91,21,22]},
+            {"id":3,"numbers":[16,5,75,64,28,70,50,55,40,77,23,48,98,67,73]}]`;
+
+        data = JSON.parse(data);
+
+        let numbersGenerated = [];
+        let currentGuess;
+        let correctGuessed = 0;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            createTables();
+            let interval = setInterval(function () {
+                if (numbersGenerated.length === 99) {
+                    clearInterval(interval);
+                    let boxes = document.querySelectorAll(".clickable");
+                    Array.from(boxes).filter(i => i.style.backgroundColor !== "lightgreen")
+                        .forEach(i => i.style.backgroundColor = "lightcoral");
+
+                    document.querySelector("#current_number").textContent = "YOU LOST!";
+                    return;
+                }
+
+                let number = generateRandomNumber();
+                currentGuess = number;
+                document.getElementById("current_number").textContent = number.toString();
+            }, 2000);
+
+            document.addEventListener("click", function (event) {
+                if (event.target.classList.contains("clickable")) {
+                    if (parseInt(event.target.textContent) === currentGuess) {
+                        event.target.style.backgroundColor = "lightgreen";
+                        if (correctGuessed === 99) {
+                            clearInterval(interval)
+                            document.getElementById("current_number").textContent = "YOU WON!";
+                        }
+                    }
+                }
+            })
+        })
+
+        function generateRandomNumber() {
+            let num = Math.floor(Math.random() * 100 + 1);
+            if (numbersGenerated.includes(num))
+                num = generateRandomNumber();
+            else
+                numbersGenerated.push(num);
+            return num;
+        }
+
+        function createTables() {
+            for (let i = 0; i < data.length; i++) {
+                let table = document.createElement("table")
+
+                let index = 0;
+                for (let j = 0; j < 3; j++) {
+                    let row = document.createElement("tr");
+
+                    for (let k = 0; k < 5; k++) {
+                        let td = document.createElement("td");
+                        td.textContent = data[i].numbers[index++];
+                        td.classList.add("clickable")
+                        row.append(td);
+                    }
+                    table.append(row);
+                }
+
+                console.log(table)
+
+                document.getElementById("tables").append(table)
+
+            }
+        }
+
+    </script>
+
+</head>
+<body>
+<p>Current number: <span id="current_number"></span></p>
+<div id="tables"></div>
+</body>
+</html>

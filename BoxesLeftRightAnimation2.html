@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        button {
+            padding: 3px 6px;
+        }
+    </style>
+
+    <script>
+        data = '[{"background-color":"red", "width":"100px", "height":"100px"},' +
+            ' {"background-color":"green", "width":"50px", "height":"100px"},' +
+            ' {"background-color":"blue", "width":"100px", "height":"50px"}]';
+
+        data = JSON.parse(data);
+
+        let boxes = [];
+        let currentIndex = 0;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            generateBoxes();
+            document.body.append(boxes[0]);
+        })
+
+        function generateBoxes() {
+            for (let i = 0; i < data.length; i++) {
+                let box = document.createElement("div");
+                box.style.backgroundColor = data[i]["background-color"];
+                box.style.width = data[i]["width"];
+                box.style.height = data[i]["height"];
+                box.style.position = "absolute";
+
+                boxes.push(box);
+            }
+        }
+
+        function move_left() {
+            let current = boxes[currentIndex--];
+
+            if (currentIndex === -1)
+                currentIndex = 2;
+
+            anime({
+                targets: current,
+                left: "-20%",
+                easing: 'easeInOutSine',
+                duration: 1500,
+                complete: function () {
+                    document.body.removeChild(current);
+                    current = boxes[currentIndex];
+                    current.style.left = "100%";
+
+                    document.body.append(current);
+
+                    anime({
+                        targets: current,
+                        left: "0%",
+                        easing: 'easeInOutSine',
+                        duration: 1500
+                    })
+                }
+            })
+        }
+
+        function move_right() {
+            let current = boxes[currentIndex++];
+
+            if (currentIndex === 3)
+                currentIndex = 0;
+
+            anime({
+                targets: current,
+                left: "100%",
+                easing: 'easeInOutSine',
+                duration: 2000,
+                complete: function () {
+                    document.body.removeChild(current);
+                    current = boxes[currentIndex];
+                    current.style.left = "-20%";
+
+                    document.body.append(current);
+
+                    anime({
+                        targets: current,
+                        left: "0%",
+                        easing: 'easeInOutSine',
+                        duration: 1500
+                    })
+                }
+            })
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="inputs">
+    <button onclick="move_left()"><</button>
+    <button onclick="move_right()">></button>
+</div>
+<br>
+</body>
+</html>

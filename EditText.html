@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .wrapper {
+            margin: 1rem 0 0 1rem;
+            width: 400px;
+        }
+    </style>
+
+    <script>
+        let data = `{"colors" : ["blue", "yellow", "red"],
+               "widths": ["100px", "200px", "300px"],
+               "background" : ["green", "white", "orange"]}`;
+
+        data = JSON.parse(data);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            createOptions();
+
+            document.addEventListener("change", function (event) {
+                let parent = event.target;
+                let element = parent.children[parent.selectedIndex];
+
+                if (parent.id === "color")
+                    document.getElementById("text").style.color = element.value;
+                else if (parent.id === "width")
+                    document.getElementById("text").style.width = element.value;
+                else if (parent.id === "background_color")
+                    document.getElementById("text").style.backgroundColor = element.value;
+                else
+                    console.log("INVALID")
+            })
+        })
+
+        function createOptions() {
+            for (let i = 0; i < 3; i++) {
+                let colorOption = document.createElement("option");
+                colorOption.value = data["colors"][i];
+                colorOption.textContent = data["colors"][i];
+
+                document.getElementById("color").append(colorOption)
+
+                let widthOption = document.createElement("option");
+                widthOption.value = data["widths"][i];
+                widthOption.textContent = data["widths"][i];
+
+                document.getElementById("width").append(widthOption)
+
+                let backgroundOption = document.createElement("option");
+                backgroundOption.value = data["background"][i];
+                backgroundOption.textContent = data["background"][i];
+
+                document.getElementById("background_color").append(backgroundOption)
+            }
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <p id="text">Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+        A alias animi commodi consequuntur cum dolor facilis molestias
+        nemo nobis odio odit omnis quo, reprehenderit ut voluptatem.
+        Ab blanditiis cum dolor eos facere fugit harum inventore neque
+        nisi omnis optio porro quaerat quasi, recusandae saepe similique
+        sint suscipit ut vero voluptate.
+    </p>
+
+    <br>
+    <label for="color">Color <select id="color"><option value="empty"></option></select></label>
+    <label for="width">Width <select id="width"><option value="empty"></option></select></label>
+    <label for="background_color">background-color <select id="background_color"><option value="empty"></option></select></label>
+
+</div>
+
+</body>
+</html>

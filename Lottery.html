@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lotarija</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: whitesmoke;
+        }
+        h2 {
+            margin: 1.5rem 0 1.5rem 1.5rem;
+        }
+        .wrapper-user {
+            margin-left: 1.5rem;
+            display: flex;
+        }
+        .wrapper-user > div:first-of-type {
+            width: 320px;
+            margin-right: 2rem;
+        }
+        label {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 2px 4px;
+        }
+        .numbers-wrapper {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            margin-right: 0.25rem;
+            text-align: center;
+        }
+        .ticket {
+            width: 280px;
+            min-height: 140px;
+            border: 2px solid #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 0.35rem;
+        }
+        #lottery_cards {
+            margin: 2.5rem 0 0 1.5rem;
+            display: flex;
+        }
+        #lottery_cards > * {
+            margin-right: 1rem;
+        }
+        #winning_numbers {
+            height: 20px;
+        }
+    </style>
+
+    <script>
+
+        function Ticket(numbers, hasBonus, cash) {
+            this.numbers = numbers;
+            this.hasBonus = hasBonus;
+            this.cash = cash;
+            this.totalWon = 0;
+            this.setTotalWon = function (correctNumbers) {
+                let add = this.hasBonus === "yes" ? 500 : 0;
+                this.totalWon = parseInt(this.cash) + parseInt(correctNumbers) * 30 + add;
+            }
+        }
+
+        let codes = [];
+        let generatedTickets = 0;
+        let ticketList = [];
+        let lotteryNumbers = [];
+        let lotteryWinningsCash = 0;
+
+        function add_lottery() {
+            let name = document.getElementById("name").value;
+            let cash = (document.getElementById("cash").value);
+            let code = document.getElementById("code").value;
+            let numbersString = document.getElementById("numbers").value;
+            let temp = document.getElementById("bonus");
+            let bonus = temp.options[temp.selectedIndex].value;
+
+            if (name === '' || cash === '' || code === '' || numbersString === '' || bonus === '') {
+                alert("Enter all fields!!!");
+                return;
+            }
+
+            if (codes.includes(code)) {
+                alert("This code is taken!!!");
+                return;
+            }
+
+            if (!validateCode(code)) {
+                alert("Invalid Code type!!!")
+                return;
+            }
+
+            codes.push(code);
+
+            let numbers = numbersString.split(", ");
+            cash = parseInt(cash);
+
+            let ticket = document.createElement("div");
+            ticket.classList.add("ticket")
+            ticket.id = generatedTickets.toString();
+
+            let parName = document.createElement("p")
+            parName.textContent = "Name: " + name;
+            let parCode = document.createElement("p")
+            parCode.textContent = "Code: " + code;
+
+
+            ticket.append(parName);
+            ticket.append(parCode);
+            ticket.append(generateNumbersContainer(numbers, "Numbers: ", false));
+
+            document.getElementById("lottery_cards").append(ticket);
+
+            generatedTickets++;
+            ticketList.push(new Ticket(numbers, bonus, cash));
+
+        }
+
+        function lottery_combination() {
+            if (generatedTickets < 5) {
+                alert("5 tickets is minimum!!!")
+                return;
+            }
+
+            let numbers = [];
+            for (let i = 0; i < 7; i++) {
+                let num = Math.floor(Math.random() * 31 + 1);
+                if (!numbers.includes(num))
+                    numbers.push(Math.floor(Math.random() * 31 + 1))
+                else i--;
+            }
+
+            lotteryNumbers = numbers;
+            let numsContainer = generateNumbersContainer(numbers, "", true);
+
+            document.querySelectorAll("button")
+                .forEach(btn => btn.disabled = true);
+
+            document.getElementById("winning_numbers").append(numsContainer);
+            checkWinnings();
+        }
+
+        function checkWinnings() {
+            for (let i = 0; i < ticketList.length; i++) {
+
+                let correctNumbers = 0;
+                let currTicket = ticketList[i];
+
+                for (let j = 0; j < 7; j++)
+                    if (lotteryNumbers.includes(parseInt(currTicket.numbers[j])))
+                        correctNumbers++;
+
+                currTicket.setTotalWon(correctNumbers)
+                let tempTicket = document.getElementById(i.toString());
+
+                if (correctNumbers <= 3)
+                    tempTicket.style.backgroundColor = "yellow";
+                else if (correctNumbers === 4 || correctNumbers === 5)
+                    tempTicket.style.backgroundColor = "lightblue";
+                else if (correctNumbers > 5)
+                    tempTicket.style.backgroundColor = "lightgreen";
+
+                let totalDisplay = document.createElement("p")
+                totalDisplay.textContent = "Total: " + currTicket.totalWon.toString();
+                tempTicket.append(totalDisplay);
+
+                let get_paid = document.createElement("button")
+                get_paid.textContent = "Get paid";
+                get_paid.classList.add("payment")
+                get_paid.style.width = "100px";
+
+                tempTicket.append(get_paid);
+                lotteryWinningsCash += currTicket.totalWon;
+            }
+
+            setLotterySavings();
+        }
+
+        function generateNumbersContainer(numbers, text, withColors) {
+            let numsContainer = document.createElement("div");
+            numsContainer.textContent = text;
+
+            for (let i = 0; i < 7; i++) {
+                let currNum = document.createElement("div")
+                currNum.classList.add("numbers-wrapper")
+                currNum.textContent = numbers[i];
+                if (withColors)
+                    currNum.style.backgroundColor =
+                        "rgb(" + randomRGBNumber() +
+                        ", " + randomRGBNumber()
+                        + ", " + randomRGBNumber() + ")";
+                numsContainer.append(currNum);
+            }
+            return numsContainer;
+        }
+
+        function setLotterySavings() {
+            document.getElementById("total_winnings").textContent = lotteryWinningsCash.toString();
+        }
+
+        function randomRGBNumber() {
+            return Math.floor(Math.random() * 156) + 100; // light colors
+        }
+
+        function validateCode(code) {
+            let pattern = /^[a-zA-Z%!]+$/;
+            return pattern.test(code);
+        }
+
+        document.addEventListener("click", function (event) {
+            if (event.target.classList.contains("payment")) {
+                let indexTicket = event.target.parentNode.id;
+                let getCash = ticketList.at(indexTicket).totalWon;
+
+                lotteryWinningsCash -= getCash;
+                setLotterySavings();
+
+                let parent = event.target.parentNode.parentNode;
+                parent.removeChild(event.target.parentNode);
+            }
+        })
+
+    </script>
+
+</head>
+<body>
+
+<h2>National lottery game</h2>
+<div class="wrapper-user">
+    <br>
+    <br>
+    <div>
+        <h3>Assign form</h3>
+        <br>
+        <label for="name">Name and surname: <input type="text" id="name"></label>
+        <br>
+        <label for="cash">Payed amount: <input type="text" id="cash"></label>
+        <br>
+        <label for="code">Code<input type="text" id="code"></label>
+        <br>
+        <label for="numbers">Numbers<input type="text" id="numbers"></label>
+        <br>
+        <label for="bonus">Bonus:
+            <select id="bonus">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select>
+        </label>
+        <br>
+        <br>
+        <button onclick="add_lottery()" id="button-add">Add</button>
+    </div>
+    <div>
+        <h3>Lucky numbers</h3>
+        <br>
+        <br>
+        <div id="winning_numbers"></div>
+        <br>
+        <button onclick="lottery_combination()">Get weekly combination</button>
+        <br>
+        <br>
+        <p>Total Winnings: <span id="total_winnings"></span></p>
+    </div>
+</div>
+
+<div id="lottery_cards">
+</div>
+
+</body>
+</html>

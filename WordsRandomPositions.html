@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+  <script>
+
+    let wordsByFrequency = new Map();
+
+    function show_words() {
+      let text = document.getElementById("text");
+
+      if (text.value === "") {
+        alert("Enter field!");
+        return;
+      }
+
+      let temp = document.getElementsByClassName("main-wrapper")[0];
+      document.body.removeChild(temp);
+
+      let words = text.value.split(/\s+/);
+      wordFrequencyGenerator(words);
+
+
+      wordsByFrequency.forEach((v, k) => {
+        let element = generateElement(k, v);
+        element.style.opacity = "0";
+
+        document.body.append(element);
+
+        element.style.position = "absolute";
+        element.style.left = (Math.random() * 1100) + "px";
+        element.style.top = (Math.random() * 550) + "px";
+
+        anime({
+            targets: element,
+            opacity: 1,
+            easing: 'easeInOutSine',
+            duration: 1500,
+            delay: (Math.random() * 2500 + Math.random() * 1000)
+        })
+
+      })
+    }
+
+    function generateElement(key, value) {
+      let element = document.createElement("div");
+
+      element.textContent = key;
+      element.style.fontSize = (parseInt(value) * 20) + "px";
+      element.style.color = randomColor();
+
+      return element;
+    }
+
+    function wordFrequencyGenerator(words) {
+      for (let i = 0; i < words.length; i++) {
+        if (wordsByFrequency.has(words[i])) {
+          let temp = wordsByFrequency.get(words[i]) + 1;
+          wordsByFrequency.set(words[i], temp);
+        } else {
+          wordsByFrequency.set(words[i], 1);
+        }
+      }
+    }
+
+    function randomColor() {
+      return "rgb(" + randomNumber() + "," + randomNumber() + "," + randomNumber() + ")";
+    }
+
+    function randomNumber() {
+      return Math.floor(Math.random() * 256);
+    }
+  </script>
+
+</head>
+<body>
+
+<div class="main-wrapper">
+  <textarea id="text" cols="30" rows="10"></textarea>
+  <br>
+  <button onclick="show_words()" id="show_button">Прикажи</button>
+</div>
+
+</body>
+</html>

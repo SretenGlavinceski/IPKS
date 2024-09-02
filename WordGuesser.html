@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+
+  <style>
+    .box {
+      border: black solid 3px;
+      height: 120px;
+      width: 120px;
+      font-size: 120px;
+      text-align: center;
+      margin: 2px;
+      color: black;
+    }
+    .box:disabled {
+        color: grey;
+    }
+  </style>
+
+  <script>
+    data = '["bukva","jazik","vokal","misla","tablo"]';
+    data = JSON.parse(data);
+
+    let currentWord;
+
+    document.addEventListener("DOMContentLoaded", function() {
+      currentWord = generateRandomWord();
+      console.log(currentWord);
+      makeBoxes();
+    })
+
+    document.addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+          let letters = document.querySelectorAll("body .input_fields_wrapper:last-of-type > .box");
+
+          if (!checkAllFields(letters)) {
+              alert("Enter all fields!");
+              return;
+          }
+
+          let countCorrect = 0;
+
+          for (let i = 0; i < letters.length; i++) {
+              if (letters[i].value === currentWord.charAt(i)) {
+                  d3.select(letters[i]).transition().ease("easeLinear").duration(1000).style("background-color", "green");
+                  countCorrect++;
+              }
+              else if (currentWord.includes(letters[i].value))
+                  d3.select(letters[i]).transition().ease("easeLinear").duration(1000).style("background-color", "yellow");
+
+              letters[i].disabled = true;
+          }
+
+          if (countCorrect === 5) {
+              d3.select("body").transition().ease("easeLinear").duration(1000).style("background-color", "green");
+              return;
+          }
+          makeBoxes();
+      }
+    })
+
+    function checkAllFields(letters) {
+        for (let i = 0; i < letters.length; i++)
+            if (letters[i].value === "")
+                return false;
+        return true;
+    }
+
+    function makeBoxes() {
+      let wrapper = document.createElement("div");
+        wrapper.classList.add("input_fields_wrapper");
+        wrapper.style.opacity = "0";
+        wrapper.style.marginBottom = "1rem";
+
+      for (let i = 0; i < 5; i++) {
+        let box = document.createElement("input");
+        box.classList.add("box");
+        wrapper.append(box);
+      }
+
+      document.getElementsByTagName("body")[0].append(wrapper);
+      d3.select(wrapper).transition().ease("easeLinear").duration(2000).style("opacity", "1");
+    }
+
+    function generateRandomWord() {
+      let index = Math.floor(Math.random() * 5);
+      return data[index];
+    }
+
+  </script>
+
+</head>
+<body>
+
+</body>
+</html>

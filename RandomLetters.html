@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+  <style>
+    .main-wrapper {
+      margin: 1rem 0 0 1rem;
+    }
+  </style>
+
+  <script>
+    let dictionary = `["јас","ти","тој","таа","тоа","ние","вие","тие"]`;
+    dictionary = JSON.parse(dictionary)
+    let letters = ['А','Б','В','Г','Д','Ѓ','Е','Ж','З','Ѕ','И','Ј','К','Л','Љ','М','Н','Њ','О',
+      'П','Р','С','Т','Ќ','У','Ф','Х','Ц','Ч','Џ','Ш']
+
+    let selectedLetters = [];
+    let timer = 59;
+    let correctAnswers = 0;
+    let correctSelectedGuess = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+      generateLetters();
+      let interval = setInterval(function () {
+        if (timer === -1) {
+          clearInterval(interval);
+          document.getElementById("guess_button").disabled = true;
+          return;
+        }
+
+        document.getElementById("timer").textContent = timer.toString();
+        timer--;
+      }, 1000)
+    })
+
+    function generateLetters() {
+      for (let i = 0; i < 10; i++) {
+        let num = generateNumber();
+        if (!selectedLetters.includes(letters[num])) {
+
+          let span = document.createElement("span");
+          span.textContent = letters[num];
+          span.style.marginRight = "10px";
+          document.getElementById("generated_letters").append(span);
+
+          selectedLetters.push(letters[num]);
+        } else {
+          i--;
+        }
+      }
+    }
+
+    function guess_word() {
+      let guess = document.getElementById("guess").value;
+      if (guess === "") {
+        alert("Enter value!");
+        return;
+      }
+
+      for (let i = 0; i < guess.length; i++) {
+        if (!selectedLetters.includes(guess.charAt(i).toUpperCase())) {
+          alert("Can have letter " + guess.charAt(i));
+          return;
+        }
+      }
+
+      let contains = false;
+
+      for (let i = 0; i < dictionary.length; i++) {
+        console.log(dictionary[i])
+        if (dictionary[i] === guess) {
+          contains = true;
+          break;
+        }
+      }
+
+      if (!contains) {
+        alert("Dictionary doesn't contain: " + guess);
+        return;
+      }
+
+      if (correctSelectedGuess.includes(guess)) {
+        alert("Already guessed that word!");
+        return;
+      }
+
+      correctAnswers++;
+
+      document.getElementById("correct_answers").textContent = correctAnswers.toString();
+
+      correctSelectedGuess.push(guess);
+    }
+
+    function generateNumber() {
+      return Math.floor(Math.random() * 31);
+    }
+
+  </script>
+</head>
+<body>
+
+<div class="main-wrapper">
+  <div id="generated_letters"></div>
+  <br>
+  <div class="inputs">
+    <input type="text" id="guess">
+    <button onclick="guess_word()" id="guess_button">Провери</button>
+  </div>
+  <p>Преостанато време <span id="timer">60</span> секунди. Погодоци <span id="correct_answers">0</span></p>
+</div>
+
+</body>
+</html>

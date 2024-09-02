@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//d3js.org/d3.v3.min.js"></script>
+
+    <style>
+        img {
+            width: 200px;
+            height: 200px;
+            position: absolute;
+            top: -200px;
+        }
+    </style>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fallSnow();
+            setInterval(fallSnow, 6000);
+        })
+
+        function fallSnow() {
+            let images = document.getElementsByTagName("img");
+
+            Array.from(images).forEach(image => {
+                let size = generateSize();
+                image.style.top = "0%";
+                image.style.marginTop = "-200px";
+                image.style.width = size + "px";
+                image.style.height = size + "px";
+                image.style.left = generateLeft() + "px";
+
+                d3.select(image).transition().ease("easeLinear").duration(generateDuration()).style("top", "150%");
+            })
+        }
+
+        function generateSize() {
+            return Math.floor(Math.random() * 100 + 100);
+        }
+
+        function generateLeft() {
+            return Math.floor(Math.random() * 1100 + 100);
+        }
+
+        function generateDuration() {
+            return Math.floor(Math.random() * 2000 + 4000);
+        }
+
+        function generateDelay() {
+            return Math.floor(Math.random() * 500 + 300);
+        }
+    </script>
+
+</head>
+<body>
+
+<img src="./img/s1.png" alt="img1">
+<img src="./img/s2.png" alt="img2">
+<img src="./img/s3.png" alt="img3">
+<img src="./img/s4.png" alt="img4">
+<img src="./img/s5.png" alt="img5">
+<img src="./img/s6.png" alt="img6">
+
+</body>
+</html>

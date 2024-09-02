@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+
+        label:not(.radio-wrapper label) {
+            width: 350px;
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 3px 6px;
+        }
+        table, tr, td, th {
+            border: 1px solid #000;
+            border-collapse: collapse;
+        }
+        tr, td, th {
+            padding: 3px 6px;
+            text-align: center;
+        }
+        .upper-wrapper {
+            width: 1000px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .main-wrapper, .upper-wrapper {
+            margin: 1rem 0 0 1rem;
+        }
+        .table-wrapper {
+            max-width: 800px;
+        }
+
+    </style>
+
+    <script>
+
+        data = `[{"address_from":"Partizanska 1", "address_to":"Kliment Ohridski 15", "weight":"3.5", "paid_type":"on_send", "ID":"Id902 90sUsdql3", "delivery": "on_hold"},
+                {"address_from":"Ruzveltova 3", "address_to":"3MUB 43", "weight":"15", "paid_type":"on_receive", "ID":"W8902 90sWmPqLzl3", "delivery": "false"}]`;
+
+        data = JSON.parse(data);
+
+        let mapByID = new Map();
+        let priceByRow = new Map();
+        let totalPrice = 0;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // console.log(data.length)
+            for (let i = 0; i < data.length; i++) {
+                let row = add_cargo_helper(
+                    data[i]["address_from"],
+                    data[i]["address_to"],
+                    data[i]["weight"],
+                    data[i]["paid_type"],
+                    data[i]["ID"]
+                );
+
+                let buttonToClick;
+
+                if (data[i]["delivery"] === "on_hold") {
+                    buttonToClick = row.children[4].children[1];
+                } else if (data[i]["delivery"] === "false"){
+                    buttonToClick = row.children[4].children[0];
+                }
+
+                buttonToClick.click();
+            }
+        })
+
+        function add_cargo() {
+            let address_from = document.getElementById("address_from").value;
+            let address_to = document.getElementById("address_to").value;
+            let weight = (document.getElementById("total_weight").value);
+            let typePayment = document.querySelector("input[name='type_payment']:checked").value;
+            let id = document.getElementById("id").value;
+
+            add_cargo_helper(address_from, address_to, weight, typePayment, id);
+        }
+
+        function add_cargo_helper(address_from, address_to, weight, typePayment, id) {
+            if (address_from === "" || address_to === "" || weight === "" || typePayment === "" || id === "") {
+                alert("Enter all fields!");
+                return null;
+            }
+
+            if (mapByID.get(idToLowerCase(id)) != null) {
+                alert("Order already exists with this id!");
+                return null;
+            }
+
+            let row = generateRow(address_from, address_to, weight, typePayment, id);
+            document.getElementById("table_info").append(row);
+
+            mapByID.set(idToLowerCase(id), row);
+            priceByRow.set(row, generatePrice(parseFloat(weight)));
+
+            return row;
+        }
+
+        document.addEventListener("click", function (event) {
+            let parent = event.target.parentNode.parentNode;
+            if (event.target.id === "delivered") {
+                d3.select(parent)
+                    .transition()
+                    .duration(1500)
+                    .ease("easeLinear")
+                    .style("background-color", "lightgreen");
+
+                let childButtons = event.target.parentNode.children;
+                Array.from(childButtons).forEach(i => i.disabled = true);
+                totalPrice += priceByRow.get(parent);
+                document.getElementById("total_sum").textContent = totalPrice;
+            } else if (event.target.id === "remove") {
+                anime({
+                    targets: parent,
+                    opacity: 0,
+                    duration: 1500,
+                    easing: 'easeInOutSine',
+                    complete: function () {
+                        document.getElementById("table_info").removeChild(parent);
+
+                        let li = document.createElement("li");
+                        li.textContent = parent.children[0].textContent;
+                        li.style.opacity = "0";
+                        document.getElementById("removed_container").append(li);
+
+                        anime({
+                            targets: li,
+                            opacity: 1,
+                            easing: 'easeInOutSine',
+                            duration: 1500
+                        })
+                    }
+                })
+
+                mapByID.delete(idToLowerCase(parent.children[0].textContent));
+            }
+        })
+
+        function idForRow(id) {
+            let temp = id;
+            temp = temp.replaceAll(" ", "-");
+            return temp;
+        }
+
+        function idToLowerCase(id) {
+            let temp = "";
+            for (let i = 0; i < id.length; i++)
+                temp += id.charAt(i).toLowerCase();
+            return temp;
+        }
+
+        function generateRow(address_from, address_to, weight, typePayment, id) {
+            let row = document.createElement("tr");
+
+            let td1 = document.createElement("td");
+            td1.textContent = idForRow(id);
+
+            let td2 = document.createElement("td");
+            td2.textContent = address_from;
+
+            let td3 = document.createElement("td");
+            td3.textContent = address_to;
+
+            let td4 = document.createElement("td");
+            td4.textContent = generatePrice(parseFloat(weight)).toString();
+
+            let td5 = document.createElement("td");
+
+            let button_delivered = document.createElement("button");
+            button_delivered.id = "delivered";
+            button_delivered.textContent = "Доставено";
+
+            let button_remove = document.createElement("button");
+            button_remove.id = "remove";
+            button_remove.textContent = "Откажано";
+
+            td5.append(button_delivered);
+            td5.append(button_remove);
+            td5.style.display = "flex";
+            td5.style.flexDirection = "column";
+
+            row.append(td1);
+            row.append(td2);
+            row.append(td3);
+            row.append(td4);
+            row.append(td5);
+
+            return row;
+        }
+
+        function generatePrice(weight) {
+            if (weight < 5)
+                return 500;
+            return 1200;
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div class="main-wrapper">
+    <h2>Карго достава на пратки</h2>
+    <br>
+    <label for="address_from">Адреса на испраќач<input type="text" id="address_from"></label>
+    <br>
+    <label for="address_to">Адреса на примач<input type="text" id="address_to"></label>
+    <br>
+    <label for="total_weight">Тежина на пратка: <input type="text" id="total_weight"></label>
+    <br>
+    <div class="radio-wrapper">Начин на плаќање
+        <label for="on_send" style="margin: 0 0.25rem 0 2.8rem;">Праќање:<input type="radio" name="type_payment" id="on_send" value="on_send" checked></label>
+        <label for="on_receive">Примање:<input type="radio" name="type_payment" id="on_receive" value="on_receive"></label>
+    </div>
+    <br>
+    <label for="id">ID на профил: <input type="text" id="id"></label>
+    <br>
+    <button onclick="add_cargo()">Внеси</button>
+</div>
+<br>
+<br>
+
+<div class="upper-wrapper">
+    <div class="table-wrapper">
+        <h3>Внесени пратки</h3>
+        <h4>Вкупна сума: <span id="total_sum">0</span></h4>
+        <table id="table_info">
+            <tr>
+                <th>ID</th>
+                <th>Адреса на испраќач</th>
+                <th>Адреса на примач</th>
+                <th>Цена</th>
+                <th>Акции</th>
+            </tr>
+        </table>
+    </div>
+
+    <div class="removed-orders">
+        <h3>Откажани нарачки</h3>
+        <ul id="removed_container"></ul>
+    </div>
+</div>
+
+</body>
+</html>

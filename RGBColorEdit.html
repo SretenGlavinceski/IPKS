@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .wrapper {
+            margin: 1rem 0 0 1rem;
+        }
+
+        .colors > label {
+            width: 270px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button {
+            padding: 3px 4px;
+        }
+        #text_wrapper {
+            margin: 1rem 0 0 1rem;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            document.addEventListener("click", function (event) {
+                let type_entry = document.querySelector('input[name = "type_edit"]:checked');
+
+                let parentAdd = document.getElementById("text_wrapper");
+
+                if (event.target.id === "add_button") {
+                    let red = document.getElementById("red_color").value;
+                    let green = document.getElementById("green_color").value;
+                    let blue = document.getElementById("blue_color").value;
+
+                    if (red === "" || green === "" || blue === "") {
+                        alert("Enter colors")
+                        return;
+                    }
+
+                    if (type_entry === null) {
+                        alert("Enter type edit!")
+                        return;
+                    }
+
+                    let text = document.getElementById("text").value;
+                    if (text === "") {
+                        alert("Enter text!");
+                        return;
+                    }
+
+                    let element = document.createElement("p");
+                    element.style.color = "rgb(" + red + "," + green + "," + blue + ")";
+                    element.textContent = text.toString();
+
+                    if (type_entry.id === "start")
+                        parentAdd.prepend(element)
+                    else
+                        parentAdd.append(element)
+                } else if (event.target.id === "delete_button") {
+                    if (parentAdd.children.length === 0)
+                        return;
+
+                    if (type_entry.id === "start")
+                        parentAdd.children[0].remove();
+                    else
+                        parentAdd.children[parentAdd.children.length - 1].remove();
+                }
+            })
+
+        })
+    </script>
+
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="colors">
+        <label for="red_color">Red <input type="number" id="red_color"> (0-255)</label>
+        <br>
+        <label for="green_color">Green<input type="number" id="green_color"> (0-255)</label>
+        <br>
+        <label for="blue_color">Blue <input type="number" id="blue_color"> (0-255)</label>
+    </div>
+    <br>
+    <br>
+    <label for="start"><input type="radio" name="type_edit" value="start" id="start"> Start</label>
+    <br>
+    <label for="end"><input type="radio" name="type_edit" value="start" id="end"> End</label>
+    <br>
+    <br>
+    <label for="text">Text: <input type="text" id="text"></label>
+    <br>
+    <br>
+    <button id="add_button">Add</button>
+    <button id="delete_button">Delete</button>
+</div>
+
+<div id="text_wrapper"></div>
+
+</body>
+</html>
